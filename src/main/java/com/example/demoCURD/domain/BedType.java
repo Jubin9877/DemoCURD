@@ -1,12 +1,17 @@
 package com.example.demoCURD.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -28,7 +33,11 @@ public class BedType implements Serializable {
 	
 	@Column(name = "active")
     private Boolean active;
-
+	
+	@ManyToMany()
+	@JoinTable(name = "property_bedtype", joinColumns = @JoinColumn(name = "bedtypeid", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "propertyid", referencedColumnName = "id"))
+	private Set<Property> property = new HashSet<>();
+	
 	public Long getId() {
 		return id;
 	}
@@ -59,6 +68,17 @@ public class BedType implements Serializable {
 
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+	
+
+	
+
+	public Set<Property> getProperty() {
+		return property;
+	}
+
+	public void setProperty(Set<Property> property) {
+		this.property = property;
 	}
 
 	@Override

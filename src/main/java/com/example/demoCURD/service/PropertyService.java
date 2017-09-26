@@ -17,6 +17,9 @@ import com.example.demoCURD.dto.PhotoDTO;
 import com.example.demoCURD.dto.PropertyDTO;
 import com.example.demoCURD.dto.PropertyBadTypeDTO;
 import com.example.demoCURD.enumeration.Status;
+import com.example.demoCURD.mapper.BedTypeMapper;
+import com.example.demoCURD.mapper.PhotoMapper;
+import com.example.demoCURD.mapper.PropertyMapper;
 import com.example.demoCURD.repository.BedTypeRepository;
 import com.example.demoCURD.repository.PhotoRepository;
 import com.example.demoCURD.repository.PropertyRepository;
@@ -28,28 +31,29 @@ public class PropertyService {
 
 	private final PropertyRepository propertyRepository;
 	private final BedTypeRepository bedTypeRepository;
-
+	private final PropertyMapper propertymapper;
+	private final PhotoMapper photoMapper;
+	private final BedTypeMapper bedTypeMapper;
+	
 	private final PhotoRepository photoRepository;
 
 	public PropertyService(PropertyRepository propertyRepository, PhotoRepository photoRepository,
-			BedTypeRepository bedTypeRepository) {
+			BedTypeRepository bedTypeRepository, PropertyMapper propertyMapper,PhotoMapper photoMapper,BedTypeMapper bedTypeMapper) {
 		this.propertyRepository = propertyRepository;
 		this.photoRepository = photoRepository;
 		this.bedTypeRepository = bedTypeRepository;
+		this.propertymapper = propertyMapper;
+		this.photoMapper =photoMapper;
+		this.bedTypeMapper =bedTypeMapper;
 	}
 
 	public PropertyDTO create(PropertyDTO propertyDTO) {
 
-		Property property = new Property();
-		property.setTitle(propertyDTO.getTitle());
+		Property property = propertymapper.toEntity(propertyDTO);
+
 		property.setStatus(Status.ACTIVE);
 		propertyRepository.save(property);
-
-		PropertyDTO propertydto = new PropertyDTO();
-		propertydto.setId(property.getId());
-		propertydto.setTitle(property.getTitle());
-		propertydto.setStatus(Status.ACTIVE);
-		return propertydto;
+		return propertymapper.toDto(property);
 
 	}
 
@@ -57,19 +61,14 @@ public class PropertyService {
 		log.debug("Request to get all BedTypes");
 		List<Property> property = propertyRepository.findAll();
 		List<PropertyDTO> propertyDto = new ArrayList<>();
-		//List<PhotoDTO> photoDTO = new ArrayList<>();
-		
+		// List<PhotoDTO> photoDTO = new ArrayList<>();
+
 		for (Property pro : property) {
-			PropertyDTO propertydto = new PropertyDTO();
-			propertydto.setId(pro.getId());
-			propertydto.setTitle(pro.getTitle());
-			propertydto.setStatus(pro.getStatus());
+			PropertyDTO propertydto = propertymapper.toDto(pro);
 
 			List<PhotoDTO> photoDTO = new ArrayList<>();
 			for (Photo photo : pro.getPhotos()) {
-				PhotoDTO photodto = new PhotoDTO();
-				photodto.setId(photo.getId());
-				photodto.setName(photo.getName());
+				PhotoDTO photodto = photoMapper.toDto(photo);
 				photoDTO.add(photodto);
 			}
 			propertydto.setPhotos(photoDTO);
@@ -94,15 +93,15 @@ public class PropertyService {
 
 		propertyRepository.save(property);
 
-		PropertyDTO propertydto = new PropertyDTO();
-		propertydto.setId(property.getId());
-		propertydto.setTitle(property.getTitle());
-		propertydto.setStatus(property.getStatus());
+		PropertyDTO propertydto = propertymapper.toDto(property);
+//		propertydto.setId(property.getId());
+//		propertydto.setTitle(property.getTitle());
+//		propertydto.setStatus(property.getStatus());
 
 		List<BedTypeDTO> bedTypeList = new ArrayList<>();
 		for (BedType bed : property.getBedType()) {
-			BedTypeDTO bedtypedto = new BedTypeDTO();
-			bedtypedto.setId(bed.getId());
+			BedTypeDTO bedtypedto = bedTypeMapper.toDto(bed);
+//			bedtypedto.setId(bed.getId());
 			bedTypeList.add(bedtypedto);
 		}
 
@@ -110,8 +109,8 @@ public class PropertyService {
 		return propertydto;
 	}
 
-	public void delete(Long propertiesid , Long bedtypesid) {
-		
+	public void delete(Long propertiesid, Long bedtypesid) {
+
 		Property property = propertyRepository.findOne(propertiesid);
 		BedType bedtype = bedTypeRepository.findOne(bedtypesid);
 		bedTypeRepository.delete(bedtype);
